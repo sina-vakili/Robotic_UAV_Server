@@ -12,16 +12,16 @@ extern qint16 ang_roll , ang_pitch;
 extern qint32 Height_quad ;
 extern char msp_speed ;
 
-ImageScanner scanner;  //Qrcode
+ImageScanner scanner;  // Qrcode Part
 
 //=====================================================> bakhsh start timer ha va barnameh
 ssooket::ssooket(QObject *parent) : QObject(parent)
 {
-    rresive_client_timer= new QElapsedTimer;  // mohasebeye timer daryaft
+    rresive_client_timer= new QElapsedTimer;  // Calculate the time of received
     rresive_client_timer->start();
 
     //-------------------------------->take image
-    Save_image_timer = new QTimer(this);      // timer take image
+    Save_image_timer = new QTimer(this);      // timer of takeing image
     connect(Save_image_timer,SIGNAL(timeout()),SLOT(take_image()));
     Save_image_timer->start(40);  //start every time
     vcap.open(0);
@@ -29,7 +29,7 @@ ssooket::ssooket(QObject *parent) : QObject(parent)
         qDebug() << "Error opening video stream or file" ;
     }
 
-    //----------------------> gosh dadan server be ip
+    //----------------------> Server listened to IP
     sserver = new QTcpServer (this);
 
     if(!sserver->listen(QHostAddress::Any, 1234))
@@ -41,7 +41,7 @@ ssooket::ssooket(QObject *parent) : QObject(parent)
         qDebug() << "Server started!";
     }
 
-    servo_timer=new QTimer (this); //timer amade bashe servo
+    servo_timer=new QTimer (this); // timer of servo
     connect(servo_timer,SIGNAL(timeout()),SLOT(servo_func()));
     servo_timer->start(10);
 
@@ -53,7 +53,7 @@ ssooket::ssooket(QObject *parent) : QObject(parent)
 
     connect(sserver, SIGNAL(newConnection()), SLOT(establish_conection()));
 
-    //----------------------->bakhshe servo
+    //-----------------------> Section servo
 
     wiringPiSetup();
     //wiringPiSetupGpio();
@@ -67,7 +67,7 @@ ssooket::ssooket(QObject *parent) : QObject(parent)
     scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);  //Qrcode
 }
 
-//===========================================================> ersale dade be client
+//===========================================================> sending data to client
 void ssooket::print(){
 
 
@@ -76,7 +76,7 @@ void ssooket::print(){
     char lo_Height_quad  , hi_Height_quad , h_hi_Height_quad ,hh_hi_Height_quad ;
 
 
-    //------------------------------->protocol ersali @ & $ ang_roll , ang_pitch , Height_quad , cheksum
+    //------------------------------->protocol of sending @ & $ ang_roll , ang_pitch , Height_quad , cheksum
     ssoket->write("@");                                 // D:00   ramz_@
     ssoket->write("&");                                 // D:01   ramz_&
     ssoket->write("$");                                 // D:02   ramz_$
@@ -139,7 +139,7 @@ void ssooket::print(){
     }
 }
 
-//============================================================>  tabeah etesale bayne server va client
+//============================================================>  Function of connecting between server and client
 void ssooket::establish_conection()
 {
     ssoket = new QTcpSocket (this) ;
@@ -152,7 +152,7 @@ void ssooket::establish_conection()
     // ssoket->flush();// motaleeeee shavad
 }
 
-//-----------------------------> tabea estefadeh az servo
+//-----------------------------> Functions of using of servo
 void ssooket::servo_func()
 {
     if(digitalRead(0))
@@ -165,7 +165,7 @@ void ssooket::servo_func()
     }
 }
 
-//----------------------------> tabea Read Qrcode
+//----------------------------> Functions of reading Qrcode
 
 void ssooket::take_image()
 {
@@ -197,7 +197,7 @@ void ssooket::take_image()
     //    }
 }
 
-//=============================================================> tavabeh  daryaft dade az client be server
+//================================================> Functions of received data from client to server
 
 void ssooket::rresive (){
     quint8 cheksum=0;
