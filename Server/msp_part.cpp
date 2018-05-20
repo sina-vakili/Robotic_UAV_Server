@@ -12,10 +12,10 @@ extern char  client_time ;
 
 msp_part::msp_part(QObject *parent) : QObject(parent)
 {
-    send_resive_msp = new QElapsedTimer;  // mohasebeye zamaneh msp
+    send_resive_msp = new QElapsedTimer;  // Time calculation of msp
     send_resive_msp->start();
     //================================================> etesale usarte beyne server va CF
-    timer_msp = new QTimer (this);       // timere msp
+    timer_msp = new QTimer (this);       // timer of msp
     connect(timer_msp,SIGNAL(timeout()),SLOT(send_msp()));
     timer_msp->start(30);
 
@@ -27,13 +27,13 @@ msp_part::msp_part(QObject *parent) : QObject(parent)
     msp_sender->setStopBits(QSerialPort::OneStop);
     msp_sender->setFlowControl(QSerialPort::NoFlowControl);
     msp_sender->open(QIODevice::ReadWrite);
-    connect(msp_sender,SIGNAL(readyRead()),SLOT(read_msp())); //------------> timer  baraye khandaneh dade az CF
+    connect(msp_sender,SIGNAL(readyRead()),SLOT(read_msp())); //------------> Timer to request data from CF
 
     if (!(msp_sender->isOpen()))
         qDebug() << "msp not found usart";
 }
 
-//==================================================>send data from server to CF
+//==================================================>send data from server to FC (Flight Control)
 
 char level = 0;
 
@@ -47,7 +47,7 @@ void msp_part::send_msp()
 
         switch (level) {
 
-        case 0 :  //=========================================> bakhshe ersale ertefa
+        case 0 :  //=========================================> Altitude sending section
 
             cheksum = 0;
 
@@ -67,19 +67,19 @@ void msp_part::send_msp()
             level = 1 ;
             break;
 
-        case 1 :  //=====================================================> bakhshe ersale roll , pitch , yaw , throttle
+        case 1 :  //=====================================================> Section of sending roll , pitch , yaw , throttle
 
             cheksum = 0;  //-------------------------------->usart protocol
             msp_sender->write("$");
             msp_sender->write("M");
             msp_sender->write("<");
-            long_value = 16 ;           // tolle dade
+            long_value = 16 ;           // Data length
             cheksum ^= long_value;
             msp_sender->write(&long_value,1);
-            code_value =200;            // code darkhast
+            code_value =200;            // request code 
             cheksum ^= code_value;
 
-            //---------------------> tabdil va ersale roll
+            //---------------------> Convert & Send roll
             value = roll_client;
             msp_sender->write(&code_value,1);
             high_value = value >> 8;
@@ -90,7 +90,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //---------------------> tabdil va ersale pitch
+            //---------------------> Convert & Send pitch
             value = pitch_client;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -100,7 +100,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //----------------------> tabdil va ersale throttle
+            //----------------------> Convert & Send throttle
             value = throttle_client;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -110,7 +110,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //---------------------> tabdil va ersale yaw
+            //---------------------> Convert & Send yaw
             value = yaw_client;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -120,7 +120,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //-----------------------> tabdil va ersale ax1
+            //-----------------------> Convert & Send ax1
             value = AUX1 ;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -130,7 +130,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //-----------------------> tabdil va ersale ax2
+            //-----------------------> Convert & Send ax2
             value = 1502 ;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -140,7 +140,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //-----------------------> tabdil va ersale ax3
+            //-----------------------> Convert & Send ax3
             value = 1503;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -150,7 +150,7 @@ void msp_part::send_msp()
             msp_sender->write(&low_value,1);
             msp_sender->write(&high_value,1);
 
-            //-----------------------> tabdil va ersale ax4
+            //-----------------------> Convert & Send ax4
             value = 1504 ;
             high_value = value >> 8;
             high_value = high_value & 0xff ;
@@ -164,7 +164,7 @@ void msp_part::send_msp()
             level = 2;
             break;
 
-        case 2 : //=======================================> bakhshe ersale darkhast ertefa
+        case 2 : //========================> Sending altitude request section ++ Code 108 ++
 
             cheksum = 0;
 
@@ -189,7 +189,7 @@ void msp_part::send_msp()
             }
             break;
 
-        case 3 : //======================================> calibration
+        case 3 : //==========================> calibration ++ Code 205 +++
 
             cheksum = 0;
             msp_sender->write("$");
@@ -213,7 +213,7 @@ void msp_part::send_msp()
 
             break;
 
-        case 4 :  //garar dadaneh ertefa
+        case 4 :  //Insert altitude
 
             cheksum = 0 ;
             msp_sender->write("$");
@@ -275,17 +275,17 @@ void msp_part::send_msp()
 }
 
 
-//==========================================> read data from CF to Server
+//==========================================> Read data from CF to Server
 void msp_part::read_msp()
 {
-    //---------------------> zamane daryafte msp
+    //---------------------> Receive time MSP
     msp_speed = send_resive_msp->elapsed();
     send_resive_msp->start();
 
     //-----------
     QByteArray msp_rr = msp_sender->readAll();
 
-    //---------------------> daryafte angle++++++(108)++++++
+    //---------------------> Get the angle++++++(108)++++++
 
     if(( static_cast<quint8>(msp_rr[4]) ) == 108)
     {
@@ -293,7 +293,7 @@ void msp_part::read_msp()
         ang_pitch= (static_cast<quint8>(msp_rr[7])& 0xff)+ ((static_cast<quint8>(msp_rr[8]) )<<8 & 0xff00);
     }
 
-    //---------------------> daryafte ertefa++++++(109)++++++
+    //---------------------> Get the altitude ++++++  code (109)++++++
 
     else if(( static_cast<quint8>(msp_rr[4]) ) == 109)
     {
