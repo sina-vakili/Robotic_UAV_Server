@@ -20,11 +20,11 @@
 using namespace cv;
 using namespace zbar;
 
-//quint16 roll_client , pitch_client , yaw_client , throttle_client ;
-//qint16 ang_roll , ang_pitch;
-//qint32 Height_quad , New_Height_quad;
-//char cheksum = 0 ;
-//char msp_speed ,client_time;
+/*quint16 roll_client , pitch_client , yaw_client , throttle_client ;
+qint16 ang_roll , ang_pitch;
+qint32 Height_quad , New_Height_quad;
+char cheksum = 0 ;
+char msp_speed ,client_time; */
 
 class ssooket : public QObject
 {
