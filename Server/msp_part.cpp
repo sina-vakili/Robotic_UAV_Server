@@ -14,7 +14,7 @@ msp_part::msp_part(QObject *parent) : QObject(parent)
 {
     send_resive_msp = new QElapsedTimer;  // Time calculation of msp
     send_resive_msp->start();
-    //================================================> etesale usarte beyne server va CF
+    //================================================> usarte connection between server and CF
     timer_msp = new QTimer (this);       // timer of msp
     connect(timer_msp,SIGNAL(timeout()),SLOT(send_msp()));
     timer_msp->start(30);
